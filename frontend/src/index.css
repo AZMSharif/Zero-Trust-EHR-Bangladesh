@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Global Styles ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+body {
+  background: #060a13;
+  min-height: 100vh;
+}
+
+/* ── Glassmorphism Utilities ── */
+@layer components {
+  .glass-card {
+    @apply relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300;
+  }
+  .glass-card-hover:hover {
+    @apply border-white/[0.15] bg-white/[0.06];
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .glass-input {
+    @apply w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white placeholder-white/30 outline-none backdrop-blur-sm transition-all duration-200;
+  }
+  .glass-input:focus {
+    @apply border-sky-500/50 bg-white/[0.07] ring-2 ring-sky-500/20;
+  }
+
+  .glass-btn {
+    @apply rounded-xl border border-white/10 bg-gradient-to-r from-sky-600 to-teal-600 px-6 py-3 font-semibold text-white shadow-lg transition-all duration-200;
+  }
+  .glass-btn:hover {
+    @apply from-sky-500 to-teal-500 shadow-sky-500/25;
+    transform: translateY(-1px);
+  }
+  .glass-btn:active {
+    transform: translateY(0);
+  }
+  .glass-btn:disabled {
+    @apply cursor-not-allowed opacity-50;
+    transform: none;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium;
+  }
+
+  .badge-active {
+    @apply badge bg-red-500/20 text-red-300 ring-1 ring-red-500/30;
+  }
+  .badge-inactive {
+    @apply badge bg-white/5 text-white/40 ring-1 ring-white/10;
+  }
+  .badge-completed {
+    @apply badge bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/30;
+  }
+  .badge-pending {
+    @apply badge bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/30;
+  }
+  .badge-overdue {
+    @apply badge bg-red-500/20 text-red-300 ring-1 ring-red-500/30 animate-pulse-slow;
+  }
+}
+
+/* ── Gradient Mesh Background ── */
+.mesh-gradient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(14, 165, 233, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(20, 184, 166, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+    #060a13;
+}
+
+/* ── Stagger Animation ── */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }

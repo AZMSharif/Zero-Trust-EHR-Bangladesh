@@ -1,0 +1,272 @@
+// ============================================================
+//  Bangladesh Zero-Trust EHR — Prisma Schema
+//  Database: PostgreSQL
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// DOCTOR
+// Primary key: BMDC registration number (string)
+// Specialty stored as free text + enum for filtering
+// ─────────────────────────────────────────────
+model Doctor {
+  bmdc_number   String         @id                   // e.g. "A-12345"
+  password_hash String
+  full_name     String
+  specialty     String                               // "Cardiology", "General Practice", etc.
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+
+  prescriptions Prescription[]
+  access_logs   AccessLog[]
+}
+
+// ─────────────────────────────────────────────
+// PATIENT
+// PK: auto-generated URN (format: BD-YYYYMMDD-XXXXX)
+// NID or birth certificate is UNIQUE and REQUIRED
+// profile_image_url is nullable (optional during registration)
+// ─────────────────────────────────────────────
+model Patient {
+  patient_urn       String    @id @default(cuid())  // e.g. "BD-20240601-00142"
+  nid_or_birth_cert String    @unique               // NID for 18+; birth cert for minors
+  mobile_number     String    @unique
+  password_hash     String
+  full_name         String
+  dob               DateTime
+  blood_group       BloodGroup
+  profile_image_url String?                          // S3 / local path; null if not uploaded
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  medical_snapshot  PatientMedicalSnapshot?
+  immunizations     Immunization[]
+  test_reports      TestReport[]
+  prescriptions     Prescription[]
+  otp_sessions      OtpSession[]
+  access_logs       AccessLog[]
+}
+
+enum BloodGroup {
+  A_POS
+  A_NEG
+  B_POS
+  B_NEG
+  AB_POS
+  AB_NEG
+  O_POS
+  O_NEG
+}
+
+// ─────────────────────────────────────────────
+// PATIENT MEDICAL SNAPSHOT
+// 1-to-1 with Patient; created automatically on patient registration.
+// All boolean disease flags default to false.
+// Lifestyle fields use enums to enforce controlled vocabulary.
+// Arrays (allergies, chronic_diseases, etc.) stored as Json[].
+// ─────────────────────────────────────────────
+model PatientMedicalSnapshot {
+  id          String   @id @default(cuid())
+  patient_urn String   @unique
+  patient     Patient  @relation(fields: [patient_urn], references: [patient_urn])
+
+  // --- Comorbidity boolean flags ---
+  // Each flag is independently set by the AI Scribe or doctor.
+  has_asthma        Boolean @default(false)
+  has_tuberculosis  Boolean @default(false)   // TB is highly endemic in Bangladesh
+  has_hiv           Boolean @default(false)   // High-risk flag → shows warning banner
+  has_jaundice      Boolean @default(false)   // Hepatitis E common in BD floodlands
+  has_anemia        Boolean @default(false)   // Nutritional anemia prevalent
+  has_diabetes      Boolean @default(false)
+
+  // --- Lifestyle metrics (localized for Bangladesh) ---
+  // alcohol_status / smoking_status: standard global metrics
+  // chews_betel_leaf: critical BD-specific carcinogen risk factor (oral cancer)
+  // uses_cannabis: documented usage pattern, affects drug interactions
+  alcohol_status   LifestyleStatus @default(NEVER)
+  smoking_status   LifestyleStatus @default(NEVER)
+  chews_betel_leaf LifestyleStatus @default(NEVER)   // "পান/জর্দা" habit tracking
+  uses_cannabis    LifestyleStatus @default(NEVER)
+
+  // --- Structured clinical arrays (stored as JSON arrays of strings) ---
+  // chronic_diseases : ["Hypertension", "CKD stage 3"]
+  // genetic_diseases : ["G6PD deficiency", "Thalassemia trait"]
+  // major_surgeries  : ["Appendectomy 2019", "C-Section 2021"]
+  // drug_history     : ["Metformin 500mg OD", "Amlodipine 5mg OD"]
+  // allergies        : ["Penicillin", "Peanuts"] — checked against prescriptions
+  chronic_diseases  Json   @default("[]")
+  genetic_diseases  Json   @default("[]")
+  major_surgeries   Json   @default("[]")
+  drug_history      Json   @default("[]")
+  allergies         Json   @default("[]")   // Any item here triggers a red banner on Doctor view
+
+  last_updated_by  String?  // BMDC number of last editing doctor (audit trail)
+  updated_at       DateTime @updatedAt
+}
+
+enum LifestyleStatus {
+  NEVER
+  FORMER     // Quit — important for risk stratification
+  CURRENT
+}
+
+// ─────────────────────────────────────────────
+// IMMUNIZATIONS
+// Tracks EPI (Expanded Programme on Immunization) schedule per patient.
+// status PENDING means due but not yet administered.
+// booster_due_date is set when a vaccine requires a follow-up dose.
+// ─────────────────────────────────────────────
+model Immunization {
+  id              String            @id @default(cuid())
+  patient_urn     String
+  patient         Patient           @relation(fields: [patient_urn], references: [patient_urn])
+
+  vaccine_name    String            // "BCG", "OPV-0", "Pentavalent-1", "MR", "COVID-19"
+  dose_number     Int               @default(1)   // For multi-dose vaccines (e.g., OPV 0,1,2,3)
+  date_administered DateTime?                     // null if status = PENDING
+  booster_due_date  DateTime?                     // null for single-dose vaccines
+  administered_at String?                         // Facility / location name
+  status          ImmunizationStatus @default(PENDING)
+
+  created_at DateTime @default(now())
+}
+
+enum ImmunizationStatus {
+  COMPLETED
+  PENDING
+  OVERDUE     // Due date passed without administration — triggers visual alert
+}
+
+// ─────────────────────────────────────────────
+// TEST REPORTS
+// Uploaded by the patient (PDF or image).
+// Doctor sees these in "Recent Test Reports" folder, sorted by upload date DESC.
+// file_url points to object storage (S3 / Cloudflare R2).
+// report_type is a controlled tag; "OTHER" is the fallback.
+// ─────────────────────────────────────────────
+model TestReport {
+  id           String     @id @default(cuid())
+  patient_urn  String
+  patient      Patient    @relation(fields: [patient_urn], references: [patient_urn])
+
+  file_url     String                        // Signed object-storage URL
+  file_name    String                        // Original filename shown in UI
+  report_type  ReportType @default(OTHER)
+  uploaded_at  DateTime   @default(now())
+  file_size_kb Int?                          // For display in file list
+
+  @@index([patient_urn, uploaded_at(sort: Desc)])
+}
+
+enum ReportType {
+  BLOOD_CBC
+  BLOOD_BIOCHEMISTRY
+  URINE_ROUTINE
+  STOOL_ROUTINE
+  XRAY
+  ECG
+  ULTRASOUND
+  CT_SCAN
+  MRI
+  PATHOLOGY
+  MICROBIOLOGY
+  OTHER
+}
+
+// ─────────────────────────────────────────────
+// PRESCRIPTIONS
+// Issued by a doctor during an unlocked session.
+// medications_json holds structured medication list:
+// [{ name, dose, frequency, duration, instructions }]
+// follow_up_date allows scheduling; shown in patient dashboard.
+// ─────────────────────────────────────────────
+model Prescription {
+  id            String   @id @default(cuid())
+  patient_urn   String
+  patient       Patient  @relation(fields: [patient_urn], references: [patient_urn])
+  doctor_bmdc   String
+  doctor        Doctor   @relation(fields: [doctor_bmdc], references: [bmdc_number])
+
+  medications_json Json                    // [{ name, dose, frequency, duration, notes }]
+  clinical_notes   String?                 // Raw AI scribe text, stored for audit
+  diagnosis        String?                 // ICD-10 code or free-text diagnosis
+  follow_up_date   DateTime?
+  date_issued      DateTime @default(now())
+
+  @@index([patient_urn, date_issued(sort: Desc)])
+}
+
+// ─────────────────────────────────────────────
+// OTP SESSION (Consent-First Access Control)
+// Created when a doctor requests access to a patient record.
+// is_used prevents OTP replay attacks.
+// expires_at = created_at + 10 minutes (OTP TTL).
+// When verified → creates an AccessGrant valid for 2 hours.
+// ─────────────────────────────────────────────
+model OtpSession {
+  id          String   @id @default(cuid())
+  patient_urn String
+  patient     Patient  @relation(fields: [patient_urn], references: [patient_urn])
+  doctor_bmdc String                        // Which doctor triggered this OTP request
+  otp_hash    String                        // bcrypt hash of 6-digit OTP (never store plaintext)
+  is_used     Boolean  @default(false)      // Prevents replay after first use
+  created_at  DateTime @default(now())
+  expires_at  DateTime                      // created_at + 10 minutes
+
+  @@index([patient_urn, is_used])
+}
+
+// ─────────────────────────────────────────────
+// ACCESS GRANT
+// Created after successful OTP verification.
+// Grants a specific doctor read+write access to a specific patient
+// for exactly 2 hours (expires_at = verified_at + 2h).
+// Doctor requests are rejected server-side if no valid grant exists.
+// ─────────────────────────────────────────────
+model AccessGrant {
+  id          String   @id @default(cuid())
+  patient_urn String
+  doctor_bmdc String
+  granted_at  DateTime @default(now())
+  expires_at  DateTime                      // granted_at + 2 hours
+  is_revoked  Boolean  @default(false)      // Manual revocation by patient
+
+  @@unique([patient_urn, doctor_bmdc])      // One active grant per doctor-patient pair
+}
+
+// ─────────────────────────────────────────────
+// ACCESS LOG (Zero-Trust Audit Trail)
+// Every doctor access attempt is logged — successful or not.
+// Required for zero-trust compliance and patient transparency.
+// ─────────────────────────────────────────────
+model AccessLog {
+  id          String   @id @default(cuid())
+  patient_urn String
+  patient     Patient  @relation(fields: [patient_urn], references: [patient_urn])
+  doctor_bmdc String
+  doctor      Doctor   @relation(fields: [doctor_bmdc], references: [bmdc_number])
+  event       AccessEvent
+  ip_address  String?
+  created_at  DateTime @default(now())
+}
+
+enum AccessEvent {
+  OTP_REQUESTED
+  OTP_VERIFIED
+  OTP_FAILED
+  OTP_EXPIRED
+  RECORD_VIEWED
+  SCRIBE_UPDATED
+  PRESCRIPTION_CREATED
+  ACCESS_REVOKED
+}
