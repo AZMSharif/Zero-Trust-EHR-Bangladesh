@@ -16,6 +16,48 @@ const dictionary = {
   cancel:             { en: "Cancel",                     bn: "বাতিল" },
   submit:             { en: "Submit",                     bn: "জমা দিন" },
   accessExpires:      { en: "Access expires at",          bn: "অ্যাক্সেস মেয়াদ শেষ" },
+  backToHome:         { en: "Back to Home",               bn: "হোমে ফিরে যান" },
+  backToOtp:          { en: "Back to Consent Gate",       bn: "সম্মতি গেটে ফিরে যান" },
+  newPatient:         { en: "New Patient",                bn: "নতুন রোগী" },
+
+  // ── Landing Page ──
+  landingSubtitle:    { en: "Consent-First Electronic Health Records for Bangladesh", bn: "বাংলাদেশের জন্য সম্মতি-প্রথম ইলেক্ট্রনিক স্বাস্থ্য রেকর্ড" },
+  doctorPortalDesc:   { en: "Access patient records with OTP consent verification. AI-powered clinical scribe included.", bn: "ওটিপি সম্মতি যাচাই সহ রোগীর রেকর্ড দেখুন। এআই ক্লিনিক্যাল স্ক্রাইব অন্তর্ভুক্ত।" },
+  patientPortalDesc:  { en: "View your medical records, immunizations, and prescriptions securely.", bn: "আপনার চিকিৎসা রেকর্ড, টিকাদান, এবং প্রেসক্রিপশন নিরাপদে দেখুন।" },
+  loginWithBmdc:      { en: "Login with BMDC Number",     bn: "বিএমডিসি নম্বর দিয়ে লগইন করুন" },
+  loginWithUrn:       { en: "Login or Register",           bn: "লগইন অথবা নিবন্ধন করুন" },
+  trustOtp:           { en: "OTP Consent Gate",            bn: "ওটিপি সম্মতি গেট" },
+  trustAi:            { en: "Gemini AI Scribe",            bn: "জেমিনি এআই স্ক্রাইব" },
+  trustAudit:         { en: "Full Audit Trail",            bn: "সম্পূর্ণ অডিট ট্রেইল" },
+
+  // ── Login & Auth ──
+  bmdcNumber:         { en: "BMDC Number",                bn: "বিএমডিসি নম্বর" },
+  password:           { en: "Password",                   bn: "পাসওয়ার্ড" },
+  loginBtn:           { en: "Login",                      bn: "লগইন" },
+  loggingIn:          { en: "Logging in...",               bn: "লগইন হচ্ছে..." },
+  loginFailed:        { en: "Login failed",                bn: "লগইন ব্যর্থ হয়েছে" },
+  register:           { en: "Register",                   bn: "নিবন্ধন" },
+  registrationFailed: { en: "Registration failed",        bn: "নিবন্ধন ব্যর্থ হয়েছে" },
+  demoHint:           { en: "Demo credentials",            bn: "ডেমো তথ্য" },
+  doctorLoginDesc:    { en: "Authenticate with your Bangladesh Medical & Dental Council registration", bn: "বাংলাদেশ মেডিক্যাল ও ডেন্টাল কাউন্সিল নিবন্ধন দিয়ে প্রমাণীকরণ করুন" },
+
+  // ── OTP Gate ──
+  consentGate:        { en: "Consent Verification",        bn: "সম্মতি যাচাইকরণ" },
+  otpStep1Desc:       { en: "Enter the patient's Unique Registration Number to request access", bn: "অ্যাক্সেস অনুরোধ করতে রোগীর ইউনিক রেজিস্ট্রেশন নম্বর লিখুন" },
+  otpStep2Desc:       { en: "Enter the OTP sent to the patient's mobile to unlock records", bn: "রেকর্ড আনলক করতে রোগীর মোবাইলে পাঠানো ওটিপি লিখুন" },
+  enterUrn:           { en: "Enter URN",                   bn: "ইউআরএন লিখুন" },
+  verifyOtp:          { en: "Verify OTP",                  bn: "ওটিপি যাচাই" },
+  requestOtp:         { en: "Request Consent OTP",         bn: "সম্মতি ওটিপি অনুরোধ" },
+  sendingOtp:         { en: "Sending OTP...",               bn: "ওটিপি পাঠানো হচ্ছে..." },
+  enterOtpCode:       { en: "OTP Code",                    bn: "ওটিপি কোড" },
+  verifying:          { en: "Verifying...",                 bn: "যাচাই হচ্ছে..." },
+  verifyAndAccess:    { en: "Verify & Access Records",     bn: "যাচাই করুন ও রেকর্ড দেখুন" },
+  tryDifferentPatient:{ en: "← Try a different patient",   bn: "← ভিন্ন রোগী চেষ্টা করুন" },
+  otpRequestFailed:   { en: "Failed to send OTP",          bn: "ওটিপি পাঠানো ব্যর্থ" },
+  otpVerifyFailed:    { en: "OTP verification failed",     bn: "ওটিপি যাচাই ব্যর্থ" },
+
+  // ── Patient Portal ──
+  myHealthRecords:    { en: "My Health Records",           bn: "আমার স্বাস্থ্য রেকর্ড" },
 
   // ── Patient Info ──
   patientSnapshot:    { en: "Patient Snapshot",           bn: "রোগীর সারসংক্ষেপ" },

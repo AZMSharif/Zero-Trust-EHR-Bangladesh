@@ -14,9 +14,20 @@ const PORT = process.env.PORT || 3001;
 
 // ── Security ──
 app.use(helmet());
+const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173")
+  .split(",")
+  .map((s) => s.trim());
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, etc)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Allow all in demo mode
+      }
+    },
     credentials: true,
   })
 );
@@ -59,9 +70,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🏥 EHR API running on http://localhost:${PORT}`);
-  console.log(`🔗 Environment: ${process.env.NODE_ENV || "development"}`);
-});
+// Only bind port in non-serverless environments
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🏥 EHR API running on http://localhost:${PORT}`);
+    console.log(`🔗 Environment: ${process.env.NODE_ENV || "development"}`);
+  });
+}
 
 module.exports = app;
