@@ -6,9 +6,10 @@ import api from "../api/client";
 import {
   Shield, Activity, Syringe, FileText, Brain, Globe, User,
   AlertTriangle, Heart, Cigarette, Wine, Leaf, Cannabis,
-  Download, Clock, Sparkles, CheckCircle2, Loader2,
+  Download, Clock, Sparkles, CheckCircle2, Loader2, Upload,
   FlaskConical, Pill, LogOut, ShieldAlert, ArrowLeft
 } from "lucide-react";
+import ReportUploadModal from "./ReportUploadModal";
 
 /* ── Shared UI Components ── */
 function GlassCard({ children, className = "", delay = 0 }) {
@@ -55,8 +56,10 @@ export default function DoctorDashboard() {
   // Grant expiry
   const [grantExpiry, setGrantExpiry] = useState(null);
 
-  useEffect(() => {
-    const fetchPatient = async () => {
+  // Upload modal
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
+  const fetchPatient = async () => {
       try {
         const { data } = await api.get(`/patient/${patient_urn}/snapshot`);
         setPatient(data);
@@ -71,6 +74,8 @@ export default function DoctorDashboard() {
         }
       } finally { setLoading(false); }
     };
+
+  useEffect(() => {
     fetchPatient();
   }, [patient_urn, navigate]);
 
@@ -167,7 +172,32 @@ export default function DoctorDashboard() {
       {/* Immunizations + Reports */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
         <GlassCard delay={0.5}><SectionHeader icon={Syringe} title={t("immunizations")} accent="emerald" /><table className="w-full text-sm"><thead><tr className="text-white/40 text-xs uppercase tracking-wider border-b border-white/10"><th className="text-left py-2 pr-4">{t("vaccine")}</th><th className="text-left py-2 pr-4">{t("dose")}</th><th className="text-left py-2 pr-4">{t("dateAdministered")}</th><th className="text-left py-2">{t("status")}</th></tr></thead><tbody>{(patient.immunizations || []).map((imm) => <tr key={imm.id} className="border-b border-white/5"><td className="py-2.5 pr-4 text-white/80">{imm.vaccine_name}</td><td className="py-2.5 pr-4 text-white/50">#{imm.dose_number}</td><td className="py-2.5 pr-4 text-white/50">{imm.date_administered ? new Date(imm.date_administered).toLocaleDateString() : "—"}</td><td className="py-2.5"><span className={imm.status === "COMPLETED" ? "badge-completed" : imm.status === "OVERDUE" ? "badge-overdue" : "badge-pending"}>{t(imm.status.toLowerCase())}</span></td></tr>)}</tbody></table></GlassCard>
-        <GlassCard delay={0.55}><SectionHeader icon={FileText} title={t("recentReports")} accent="sky" />{(patient.test_reports || []).length === 0 ? <p className="text-white/30 text-sm italic">{t("noReports")}</p> : <div className="space-y-3">{patient.test_reports.map((r) => <div key={r.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all group"><div className="flex items-center gap-3"><div className="w-9 h-9 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400"><FileText size={16} /></div><div><p className="text-sm text-white/80 font-medium">{r.file_name}</p><p className="text-xs text-white/40">{t(r.report_type)} • {r.file_size_kb}KB</p></div></div><Download size={16} className="text-white/30" /></div>)}</div>}</GlassCard>
+        <GlassCard delay={0.55}>
+          <div className="flex items-center justify-between">
+            <SectionHeader icon={FileText} title={t("recentReports")} accent="sky" />
+            <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 rounded-lg text-xs font-medium transition-colors border border-sky-500/20 -mt-4">
+              <Upload size={14} /> {t("upload") || "Upload"}
+            </button>
+          </div>
+          {(patient.test_reports || []).length === 0 ? (
+            <p className="text-white/30 text-sm italic">{t("noReports")}</p>
+          ) : (
+            <div className="space-y-3">
+              {patient.test_reports.map((r) => (
+                <a key={r.id} href={r.file_url} download={r.file_name} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all group block">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400"><FileText size={16} /></div>
+                    <div>
+                      <p className="text-sm text-white/80 font-medium group-hover:text-sky-400 transition-colors">{r.file_name}</p>
+                      <p className="text-xs text-white/40">{t(r.report_type)} • {r.file_size_kb}KB</p>
+                    </div>
+                  </div>
+                  <Download size={16} className="text-white/30 group-hover:text-sky-400 transition-colors" />
+                </a>
+              ))}
+            </div>
+          )}
+        </GlassCard>
       </div>
 
       {/* AI Scribe */}
@@ -189,10 +219,13 @@ export default function DoctorDashboard() {
         )}
       </GlassCard>
 
-      <footer className="text-center text-xs text-white/20 pb-8">
-        <p>Zero-Trust EHR Bangladesh • Consent-First Healthcare</p>
-        <p className="mt-1 font-bangla">জিরো-ট্রাস্ট ই-এইচ-আর বাংলাদেশ • সম্মতি-প্রথম স্বাস্থ্যসেবা</p>
-      </footer>
+
+      <ReportUploadModal 
+        isOpen={isUploadModalOpen} 
+        onClose={() => setIsUploadModalOpen(false)} 
+        patientUrn={patient_urn} 
+        onSuccess={fetchPatient} 
+      />
     </div>
   );
 }

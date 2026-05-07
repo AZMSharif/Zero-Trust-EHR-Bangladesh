@@ -67,4 +67,57 @@ router.get("/my/dashboard", authenticate, patientOnly, async (req, res) => {
   }
 });
 
+// ── Upload Report (Both Patient and Doctor) ──
+router.post("/patient/:patient_urn/report", authenticate, async (req, res) => {
+  try {
+    const { patient_urn } = req.params;
+    const { file_name, file_data, report_type } = req.body;
+
+    if (!file_name || !file_data) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Role-based access control
+    if (req.user.role === "patient") {
+      if (req.user.id !== patient_urn) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+    } else if (req.user.role === "doctor") {
+      // Check access grant
+      const grant = await prisma.accessGrant.findFirst({
+        where: {
+          patient_urn,
+          doctor_bmdc: req.user.id,
+          is_revoked: false,
+          expires_at: { gt: new Date() },
+        },
+      });
+      if (!grant) {
+        return res.status(403).json({ error: "Active access grant required" });
+      }
+    } else {
+      return res.status(403).json({ error: "Unauthorized role" });
+    }
+
+    // Calculate approximate size in KB from Base64 string
+    const sizeInBytes = Math.ceil((file_data.length * 3) / 4);
+    const file_size_kb = Math.round(sizeInBytes / 1024);
+
+    const report = await prisma.testReport.create({
+      data: {
+        patient_urn,
+        file_url: file_data,
+        file_name,
+        report_type: report_type || "OTHER",
+        file_size_kb,
+      },
+    });
+
+    res.json({ message: "Report uploaded successfully", report });
+  } catch (error) {
+    console.error("Report upload error:", error);
+    res.status(500).json({ error: "Failed to upload report" });
+  }
+});
+
 module.exports = router;

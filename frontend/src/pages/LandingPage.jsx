@@ -29,19 +29,6 @@ export default function LandingPage() {
         <p className="text-base md:text-lg text-white/40 max-w-lg mx-auto">
           {t("landingSubtitle")}
         </p>
-
-        {/* Trust indicators */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mt-6 text-xs text-white/30">
-          <span className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5">
-            <Lock size={12} className="text-emerald-400" /> {t("trustOtp")}
-          </span>
-          <span className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5">
-            <Brain size={12} className="text-violet-400" /> {t("trustAi")}
-          </span>
-          <span className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5">
-            <Activity size={12} className="text-sky-400" /> {t("trustAudit")}
-          </span>
-        </div>
       </div>
 
       {/* Portal Cards */}
@@ -55,7 +42,6 @@ export default function LandingPage() {
             <Stethoscope size={26} className="text-sky-400" />
           </div>
           <h2 className="text-xl font-bold text-white mb-2">{t("doctorPortal")}</h2>
-          <p className="text-sm text-white/40 leading-relaxed">{t("doctorPortalDesc")}</p>
           <div className="mt-5 flex items-center gap-2 text-sky-400 text-sm font-medium">
             {t("loginWithBmdc")} →
           </div>
@@ -70,18 +56,11 @@ export default function LandingPage() {
             <UserRound size={26} className="text-violet-400" />
           </div>
           <h2 className="text-xl font-bold text-white mb-2">{t("patientPortal")}</h2>
-          <p className="text-sm text-white/40 leading-relaxed">{t("patientPortalDesc")}</p>
           <div className="mt-5 flex items-center gap-2 text-violet-400 text-sm font-medium">
             {t("loginWithUrn")} →
           </div>
         </button>
       </div>
-
-      {/* Footer */}
-      <footer className="mt-16 text-center text-xs text-white/15">
-        <p>Zero-Trust EHR Bangladesh • Consent-First Healthcare</p>
-        <p className="mt-1 font-bangla">জিরো-ট্রাস্ট ই-এইচ-আর বাংলাদেশ • সম্মতি-প্রথম স্বাস্থ্যসেবা</p>
-      </footer>
     </div>
   );
 }

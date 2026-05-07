@@ -99,10 +99,6 @@ export default function DoctorLogin() {
             </button>
           </form>
 
-          {/* Demo hint */}
-          <div className="mt-6 p-3 rounded-xl bg-white/[0.03] border border-white/5 text-xs text-white/30 text-center">
-            <p>{t("demoHint")}: <span className="text-sky-400 font-mono">A-56789</span> / <span className="text-sky-400 font-mono">doctor123</span></p>
-          </div>
         </div>
       </div>
     </div>

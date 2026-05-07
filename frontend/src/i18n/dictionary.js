@@ -4,8 +4,8 @@
 // ─────────────────────────────────────────────
 
 const dictionary = {
-  // ── Navigation & General ──
-  appName:            { en: "Zero-Trust EHR",            bn: "জিরো-ট্রাস্ট ই-এইচ-আর" },
+  // ── Brand & Nav ──
+  appName:            { en: "MediBridge",            bn: "মেডিব্রিজ" },
   doctorPortal:       { en: "Doctor Portal",              bn: "ডাক্তার পোর্টাল" },
   patientPortal:      { en: "Patient Portal",             bn: "রোগী পোর্টাল" },
   dashboard:          { en: "Dashboard",                  bn: "ড্যাশবোর্ড" },
@@ -21,25 +21,25 @@ const dictionary = {
   newPatient:         { en: "New Patient",                bn: "নতুন রোগী" },
 
   // ── Landing Page ──
-  landingSubtitle:    { en: "Consent-First Electronic Health Records for Bangladesh", bn: "বাংলাদেশের জন্য সম্মতি-প্রথম ইলেক্ট্রনিক স্বাস্থ্য রেকর্ড" },
-  doctorPortalDesc:   { en: "Access patient records with OTP consent verification. AI-powered clinical scribe included.", bn: "ওটিপি সম্মতি যাচাই সহ রোগীর রেকর্ড দেখুন। এআই ক্লিনিক্যাল স্ক্রাইব অন্তর্ভুক্ত।" },
-  patientPortalDesc:  { en: "View your medical records, immunizations, and prescriptions securely.", bn: "আপনার চিকিৎসা রেকর্ড, টিকাদান, এবং প্রেসক্রিপশন নিরাপদে দেখুন।" },
-  loginWithBmdc:      { en: "Login with BMDC Number",     bn: "বিএমডিসি নম্বর দিয়ে লগইন করুন" },
+  landingSubtitle:    { en: "Consent-First Electronic Health Records for Bangladesh", bn: "বাংলাদেশের জন্য সুরক্ষিত ডিজিটাল স্বাস্থ্য রেকর্ড" },
+  doctorPortalDesc:   { en: "Access patient records with OTP consent verification.", bn: "ওটিপি যাচাইকরণের মাধ্যমে রোগীর তথ্য দেখুন।" },
+  patientPortalDesc:  { en: "View your medical records, immunizations, and prescriptions securely.", bn: "আপনার চিকিৎসা সংক্রান্ত সকল রেকর্ড নিরাপদে দেখুন।" },
+  loginWithBmdc:      { en: "Login with BMDC Number",     bn: "বিএমডিসি নম্বর দিয়ে লগইন" },
   loginWithUrn:       { en: "Login or Register",           bn: "লগইন অথবা নিবন্ধন করুন" },
-  trustOtp:           { en: "OTP Consent Gate",            bn: "ওটিপি সম্মতি গেট" },
-  trustAi:            { en: "Gemini AI Scribe",            bn: "জেমিনি এআই স্ক্রাইব" },
-  trustAudit:         { en: "Full Audit Trail",            bn: "সম্পূর্ণ অডিট ট্রেইল" },
+  trustOtp:           { en: "OTP Verification",            bn: "ওটিপি যাচাই" },
+  trustAi:            { en: "AI Assistant",                bn: "এআই অ্যাসিস্ট্যান্ট" },
+  trustAudit:         { en: "Audit Trail",                 bn: "অডিট ট্রেইল" },
 
   // ── Login & Auth ──
   bmdcNumber:         { en: "BMDC Number",                bn: "বিএমডিসি নম্বর" },
   password:           { en: "Password",                   bn: "পাসওয়ার্ড" },
   loginBtn:           { en: "Login",                      bn: "লগইন" },
   loggingIn:          { en: "Logging in...",               bn: "লগইন হচ্ছে..." },
-  loginFailed:        { en: "Login failed",                bn: "লগইন ব্যর্থ হয়েছে" },
+  loginFailed:        { en: "Login failed",                bn: "লগইন ব্যর্থ" },
   register:           { en: "Register",                   bn: "নিবন্ধন" },
-  registrationFailed: { en: "Registration failed",        bn: "নিবন্ধন ব্যর্থ হয়েছে" },
-  demoHint:           { en: "Demo credentials",            bn: "ডেমো তথ্য" },
-  doctorLoginDesc:    { en: "Authenticate with your Bangladesh Medical & Dental Council registration", bn: "বাংলাদেশ মেডিক্যাল ও ডেন্টাল কাউন্সিল নিবন্ধন দিয়ে প্রমাণীকরণ করুন" },
+  registrationFailed: { en: "Registration failed",        bn: "নিবন্ধন ব্যর্থ" },
+  demoHint:           { en: "Demo Login",                  bn: "ডেমো লগইন" },
+  doctorLoginDesc:    { en: "Login with your BMDC registration number", bn: "আপনার BMDC রেজিস্ট্রেশন নম্বর দিয়ে লগইন করুন" },
 
   // ── OTP Gate ──
   consentGate:        { en: "Consent Verification",        bn: "সম্মতি যাচাইকরণ" },
@@ -115,6 +115,15 @@ const dictionary = {
   recentReports:      { en: "Recent Test Reports",        bn: "সাম্প্রতিক পরীক্ষার রিপোর্ট" },
   uploadedAt:         { en: "Uploaded",                   bn: "আপলোডের তারিখ" },
   download:           { en: "Download",                   bn: "ডাউনলোড" },
+  upload:             { en: "Upload",                     bn: "আপলোড" },
+  uploadReport:       { en: "Upload Report",              bn: "রিপোর্ট আপলোড করুন" },
+  reportTitle:        { en: "Report Title",               bn: "রিপোর্টের শিরোনাম" },
+  reportType:         { en: "Report Type",                bn: "রিপোর্টের ধরন" },
+  selectFile:         { en: "Select File (PDF or Image)", bn: "ফাইল নির্বাচন করুন (পিডিএফ বা ছবি)" },
+  clickToBrowse:      { en: "Click to browse",            bn: "ব্রাউজ করতে ক্লিক করুন" },
+  uploading:          { en: "Uploading...",               bn: "আপলোড হচ্ছে..." },
+  fileTooLarge:       { en: "File is too large (max 7MB).", bn: "ফাইলটি খুব বড় (সর্বোচ্চ ৭এমবি)।" },
+  uploadFailed:       { en: "Failed to upload report.",   bn: "রিপোর্ট আপলোড ব্যর্থ হয়েছে।" },
   noReports:          { en: "No reports uploaded",        bn: "কোনো রিপোর্ট আপলোড হয়নি" },
 
   // ── Prescriptions ──
