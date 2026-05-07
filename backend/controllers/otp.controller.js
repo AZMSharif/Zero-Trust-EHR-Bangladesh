@@ -37,7 +37,7 @@ async function requestOtp(req, res) {
       message: "OTP sent to patient's mobile",
       patient_name: patient.full_name,
       mobile_masked: patient.mobile_number.replace(/.(?=.{4})/g, "*"),
-      demo_otp: process.env.NODE_ENV !== "production" ? otp : undefined,
+      demo_otp: otp, // Always return OTP for MVP demonstration
     });
   } catch (err) {
     console.error("OTP request error:", err);
