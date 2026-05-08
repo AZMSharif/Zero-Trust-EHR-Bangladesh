@@ -61,6 +61,10 @@ async function main() {
   });
 
   // Immunizations
+  await prisma.immunization.deleteMany({
+    where: { patient_urn: pat.patient_urn }
+  });
+  
   await prisma.immunization.createMany({
     data: [
       { patient_urn: pat.patient_urn, vaccine_name: "TT (Tetanus Toxoid)", dose_number: 1, date_administered: new Date("2020-01-15"), status: "COMPLETED" },
