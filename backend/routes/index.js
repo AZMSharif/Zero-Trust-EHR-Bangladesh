@@ -71,7 +71,7 @@ router.get("/my/dashboard", authenticate, patientOnly, async (req, res) => {
 router.post("/patient/:patient_urn/report", authenticate, async (req, res) => {
   try {
     const { patient_urn } = req.params;
-    const { file_name, file_data, report_type } = req.body;
+    const { file_name, file_data, report_type, test_date } = req.body;
 
     if (!file_name || !file_data) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -103,20 +103,79 @@ router.post("/patient/:patient_urn/report", authenticate, async (req, res) => {
     const sizeInBytes = Math.ceil((file_data.length * 3) / 4);
     const file_size_kb = Math.round(sizeInBytes / 1024);
 
+    const reportData = {
+      patient_urn,
+      file_url: file_data,
+      file_name,
+      report_type: report_type || "OTHER",
+      file_size_kb,
+    };
+
+    if (test_date) {
+      reportData.uploaded_at = new Date(test_date);
+    }
+
     const report = await prisma.testReport.create({
-      data: {
-        patient_urn,
-        file_url: file_data,
-        file_name,
-        report_type: report_type || "OTHER",
-        file_size_kb,
-      },
+      data: reportData,
     });
 
     res.json({ message: "Report uploaded successfully", report });
   } catch (error) {
     console.error("Report upload error:", error);
     res.status(500).json({ error: "Failed to upload report" });
+  }
+});
+
+// DELETE /api/patient/:patient_urn/report/:report_id
+// Delete a patient's report
+router.delete("/patient/:patient_urn/report/:report_id", authenticate, async (req, res) => {
+  try {
+    const { patient_urn, report_id } = req.params;
+
+    // Role-based access control
+    if (req.user.role === "patient") {
+      if (req.user.id !== patient_urn) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+    } else if (req.user.role === "doctor") {
+      // Check access grant
+      const grant = await prisma.accessGrant.findFirst({
+        where: {
+          patient_urn,
+          doctor_bmdc: req.user.id,
+          is_revoked: false,
+          expires_at: { gt: new Date() },
+        },
+      });
+      if (!grant) {
+        return res.status(403).json({ error: "Active access grant required" });
+      }
+    } else {
+      return res.status(403).json({ error: "Unauthorized role" });
+    }
+
+    // Verify report exists and belongs to the patient
+    const report = await prisma.testReport.findFirst({
+      where: {
+        id: report_id,
+        patient_urn: patient_urn
+      }
+    });
+
+    if (!report) {
+      return res.status(404).json({ error: "Report not found" });
+    }
+
+    await prisma.testReport.delete({
+      where: {
+        id: report_id
+      }
+    });
+
+    res.json({ message: "Report deleted successfully" });
+  } catch (error) {
+    console.error("Report deletion error:", error);
+    res.status(500).json({ error: "Failed to delete report" });
   }
 });
 

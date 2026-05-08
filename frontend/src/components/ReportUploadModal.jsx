@@ -8,6 +8,7 @@ export default function ReportUploadModal({ isOpen, onClose, patientUrn, onSucce
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
   const [reportType, setReportType] = useState("OTHER");
+  const [testDate, setTestDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -56,7 +57,8 @@ export default function ReportUploadModal({ isOpen, onClose, patientUrn, onSucce
       await api.post(`/patient/${patientUrn}/report`, {
         file_name: fileName,
         file_data: base64Data,
-        report_type: reportType
+        report_type: reportType,
+        test_date: testDate
       });
       
       onSuccess();
@@ -65,6 +67,7 @@ export default function ReportUploadModal({ isOpen, onClose, patientUrn, onSucce
       setFile(null);
       setFileName("");
       setReportType("OTHER");
+      setTestDate(new Date().toISOString().split('T')[0]);
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.error || t("uploadFailed") || "Failed to upload report.");
@@ -130,6 +133,19 @@ export default function ReportUploadModal({ isOpen, onClose, patientUrn, onSucce
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">
+              {t("testDate") || "Test Date"}
+            </label>
+            <input
+              type="date"
+              value={testDate}
+              onChange={(e) => setTestDate(e.target.value)}
+              className="glass-input w-full"
+              required
+            />
           </div>
 
           <div>

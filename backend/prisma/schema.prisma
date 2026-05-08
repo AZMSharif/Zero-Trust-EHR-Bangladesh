@@ -1,8 +1,3 @@
-// ============================================================
-//  Bangladesh Zero-Trust EHR — Prisma Schema
-//  Database: PostgreSQL (Neon Serverless)
-// ============================================================
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,12 +5,9 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL") // Required for Neon — used by Prisma CLI migrations
+  directUrl = env("DIRECT_URL")
 }
 
-// ─────────────────────────────────────────────
-// DOCTOR
-// ─────────────────────────────────────────────
 model Doctor {
   bmdc_number   String         @id
   password_hash String
@@ -23,33 +15,126 @@ model Doctor {
   specialty     String
   created_at    DateTime       @default(now())
   updated_at    DateTime       @updatedAt
-
-  prescriptions Prescription[]
   access_logs   AccessLog[]
+  prescriptions Prescription[]
 }
 
-// ─────────────────────────────────────────────
-// PATIENT
-// ─────────────────────────────────────────────
 model Patient {
-  patient_urn       String    @id @default(cuid())
-  nid_or_birth_cert String    @unique
-  mobile_number     String    @unique
+  patient_urn       String                  @id @default(cuid())
+  nid_or_birth_cert String                  @unique
+  mobile_number     String                  @unique
   password_hash     String
   full_name         String
   dob               DateTime
   blood_group       BloodGroup
   profile_image_url String?
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  medical_snapshot  PatientMedicalSnapshot?
-  immunizations     Immunization[]
-  test_reports      TestReport[]
-  prescriptions     Prescription[]
-  otp_sessions      OtpSession[]
+  created_at        DateTime                @default(now())
+  updated_at        DateTime                @updatedAt
   access_logs       AccessLog[]
+  immunizations     Immunization[]
+  otp_sessions      OtpSession[]
+  medical_snapshot  PatientMedicalSnapshot?
+  prescriptions     Prescription[]
+  test_reports      TestReport[]
+}
+
+model PatientMedicalSnapshot {
+  id               String          @id @default(cuid())
+  patient_urn      String          @unique
+  has_asthma       Boolean         @default(false)
+  has_tuberculosis Boolean         @default(false)
+  has_hiv          Boolean         @default(false)
+  has_jaundice     Boolean         @default(false)
+  has_anemia       Boolean         @default(false)
+  has_diabetes     Boolean         @default(false)
+  alcohol_status   LifestyleStatus @default(NEVER)
+  smoking_status   LifestyleStatus @default(NEVER)
+  chews_betel_leaf LifestyleStatus @default(NEVER)
+  uses_cannabis    LifestyleStatus @default(NEVER)
+  chronic_diseases Json            @default("[]")
+  genetic_diseases Json            @default("[]")
+  major_surgeries  Json            @default("[]")
+  drug_history     Json            @default("[]")
+  allergies        Json            @default("[]")
+  last_updated_by  String?
+  updated_at       DateTime        @updatedAt
+  patient          Patient         @relation(fields: [patient_urn], references: [patient_urn])
+}
+
+model Immunization {
+  id                String             @id @default(cuid())
+  patient_urn       String
+  vaccine_name      String
+  dose_number       Int                @default(1)
+  date_administered DateTime?
+  booster_due_date  DateTime?
+  administered_at   String?
+  status            ImmunizationStatus @default(PENDING)
+  created_at        DateTime           @default(now())
+  patient           Patient            @relation(fields: [patient_urn], references: [patient_urn])
+}
+
+model TestReport {
+  id           String     @id @default(cuid())
+  patient_urn  String
+  file_url     String
+  file_name    String
+  report_type  ReportType @default(OTHER)
+  uploaded_at  DateTime   @default(now())
+  file_size_kb Int?
+  patient      Patient    @relation(fields: [patient_urn], references: [patient_urn])
+
+  @@index([patient_urn, uploaded_at(sort: Desc)])
+}
+
+model Prescription {
+  id               String    @id @default(cuid())
+  patient_urn      String
+  doctor_bmdc      String
+  medications_json Json
+  clinical_notes   String?
+  diagnosis        String?
+  follow_up_date   DateTime?
+  date_issued      DateTime  @default(now())
+  doctor           Doctor    @relation(fields: [doctor_bmdc], references: [bmdc_number])
+  patient          Patient   @relation(fields: [patient_urn], references: [patient_urn])
+
+  @@index([patient_urn, date_issued(sort: Desc)])
+}
+
+model OtpSession {
+  id          String   @id @default(cuid())
+  patient_urn String
+  doctor_bmdc String
+  otp_hash    String
+  is_used     Boolean  @default(false)
+  created_at  DateTime @default(now())
+  expires_at  DateTime
+  patient     Patient  @relation(fields: [patient_urn], references: [patient_urn])
+
+  @@index([patient_urn, is_used])
+}
+
+model AccessGrant {
+  id          String   @id @default(cuid())
+  patient_urn String
+  doctor_bmdc String
+  granted_at  DateTime @default(now())
+  expires_at  DateTime
+  is_revoked  Boolean  @default(false)
+
+  @@unique([patient_urn, doctor_bmdc])
+}
+
+model AccessLog {
+  id          String      @id @default(cuid())
+  patient_urn String
+  doctor_bmdc String
+  event       AccessEvent
+  ip_address  String?
+  created_at  DateTime    @default(now())
+  doctor      Doctor      @relation(fields: [doctor_bmdc], references: [bmdc_number])
+  patient     Patient     @relation(fields: [patient_urn], references: [patient_urn])
 }
 
 enum BloodGroup {
@@ -63,81 +148,16 @@ enum BloodGroup {
   O_NEG
 }
 
-// ─────────────────────────────────────────────
-// PATIENT MEDICAL SNAPSHOT (1-to-1)
-// ─────────────────────────────────────────────
-model PatientMedicalSnapshot {
-  id          String   @id @default(cuid())
-  patient_urn String   @unique
-  patient     Patient  @relation(fields: [patient_urn], references: [patient_urn])
-
-  has_asthma        Boolean @default(false)
-  has_tuberculosis  Boolean @default(false)
-  has_hiv           Boolean @default(false)
-  has_jaundice      Boolean @default(false)
-  has_anemia        Boolean @default(false)
-  has_diabetes      Boolean @default(false)
-
-  alcohol_status   LifestyleStatus @default(NEVER)
-  smoking_status   LifestyleStatus @default(NEVER)
-  chews_betel_leaf LifestyleStatus @default(NEVER)
-  uses_cannabis    LifestyleStatus @default(NEVER)
-
-  chronic_diseases  Json   @default("[]")
-  genetic_diseases  Json   @default("[]")
-  major_surgeries   Json   @default("[]")
-  drug_history      Json   @default("[]")
-  allergies         Json   @default("[]")
-
-  last_updated_by  String?
-  updated_at       DateTime @updatedAt
-}
-
 enum LifestyleStatus {
   NEVER
   FORMER
   CURRENT
 }
 
-// ─────────────────────────────────────────────
-// IMMUNIZATIONS
-// ─────────────────────────────────────────────
-model Immunization {
-  id              String            @id @default(cuid())
-  patient_urn     String
-  patient         Patient           @relation(fields: [patient_urn], references: [patient_urn])
-
-  vaccine_name      String
-  dose_number       Int               @default(1)
-  date_administered DateTime?
-  booster_due_date  DateTime?
-  administered_at   String?
-  status            ImmunizationStatus @default(PENDING)
-
-  created_at DateTime @default(now())
-}
-
 enum ImmunizationStatus {
   COMPLETED
   PENDING
   OVERDUE
-}
-
-// ─────────────────────────────────────────────
-// TEST REPORTS
-// ─────────────────────────────────────────────
-model TestReport {
-  id           String     @id @default(cuid())
-  patient_urn  String
-  patient      Patient    @relation(fields: [patient_urn], references: [patient_urn])
-
-  file_url     String
-  file_name    String
-  report_type  ReportType @default(OTHER)
-  uploaded_at  DateTime   @default(now())
-  file_size_kb Int?
-
-  @@index([patient_urn, uploaded_at(sort: Desc)])
 }
 
 enum ReportType {
@@ -153,69 +173,6 @@ enum ReportType {
   PATHOLOGY
   MICROBIOLOGY
   OTHER
-}
-
-// ─────────────────────────────────────────────
-// PRESCRIPTIONS
-// ─────────────────────────────────────────────
-model Prescription {
-  id            String   @id @default(cuid())
-  patient_urn   String
-  patient       Patient  @relation(fields: [patient_urn], references: [patient_urn])
-  doctor_bmdc   String
-  doctor        Doctor   @relation(fields: [doctor_bmdc], references: [bmdc_number])
-
-  medications_json Json
-  clinical_notes   String?
-  diagnosis        String?
-  follow_up_date   DateTime?
-  date_issued      DateTime @default(now())
-
-  @@index([patient_urn, date_issued(sort: Desc)])
-}
-
-// ─────────────────────────────────────────────
-// OTP SESSION (Consent-First Access Control)
-// ─────────────────────────────────────────────
-model OtpSession {
-  id          String   @id @default(cuid())
-  patient_urn String
-  patient     Patient  @relation(fields: [patient_urn], references: [patient_urn])
-  doctor_bmdc String
-  otp_hash    String
-  is_used     Boolean  @default(false)
-  created_at  DateTime @default(now())
-  expires_at  DateTime
-
-  @@index([patient_urn, is_used])
-}
-
-// ─────────────────────────────────────────────
-// ACCESS GRANT (2-hour window)
-// ─────────────────────────────────────────────
-model AccessGrant {
-  id          String   @id @default(cuid())
-  patient_urn String
-  doctor_bmdc String
-  granted_at  DateTime @default(now())
-  expires_at  DateTime
-  is_revoked  Boolean  @default(false)
-
-  @@unique([patient_urn, doctor_bmdc])
-}
-
-// ─────────────────────────────────────────────
-// ACCESS LOG (Zero-Trust Audit Trail)
-// ─────────────────────────────────────────────
-model AccessLog {
-  id          String   @id @default(cuid())
-  patient_urn String
-  patient     Patient  @relation(fields: [patient_urn], references: [patient_urn])
-  doctor_bmdc String
-  doctor      Doctor   @relation(fields: [doctor_bmdc], references: [bmdc_number])
-  event       AccessEvent
-  ip_address  String?
-  created_at  DateTime @default(now())
 }
 
 enum AccessEvent {

@@ -70,7 +70,8 @@ async function analyzeClinicalNote(req, res) {
     }
 
     // 2. Call Gemini to parse the clinical note
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // Switched to gemini-2.0-flash-lite due to quota limits on flash
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
     const prompt = `${SYSTEM_PROMPT}\n\nDOCTOR'S CLINICAL NOTE:\n"${text}"`;
 
@@ -158,6 +159,9 @@ async function analyzeClinicalNote(req, res) {
     });
   } catch (err) {
     console.error("AI Scribe error:", err);
+    if (err.message && err.message.includes("429")) {
+        return res.status(429).json({ error: "AI Scribe quota exceeded. Please try again later or upgrade the API key." });
+    }
     res.status(500).json({ error: "AI Scribe analysis failed" });
   }
 }

@@ -7,7 +7,7 @@ import {
   Shield, Activity, Syringe, FileText, Globe, User,
   AlertTriangle, Heart, Cigarette, Wine, Leaf, Cannabis,
   Clock, Loader2, FlaskConical, Pill, LogOut, ShieldAlert,
-  Download, Upload
+  Download, Upload, Trash2
 } from "lucide-react";
 import ReportUploadModal from "../components/ReportUploadModal";
 
@@ -69,6 +69,16 @@ export default function PatientDashboard() {
       setPatient(data);
     } catch (err) { setError(err.response?.data?.error || "Failed to load dashboard"); }
     finally { setLoading(false); }
+  };
+
+  const handleDeleteReport = async (reportId) => {
+    if (!window.confirm(t("confirmDeleteReport") || "Are you sure you want to delete this report?")) return;
+    try {
+      await api.delete(`/patient/${patient.patient_urn}/report/${reportId}`);
+      fetchData();
+    } catch (err) {
+      alert(t("deleteFailed") || "Failed to delete report.");
+    }
   };
 
   useEffect(() => {
@@ -188,16 +198,26 @@ export default function PatientDashboard() {
           ) : (
             <div className="space-y-3">
               {patient.test_reports.map((r) => (
-                <a key={r.id} href={r.file_url} download={r.file_name} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all group block">
+                <div key={r.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all group">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400"><FileText size={16} /></div>
                     <div>
                       <p className="text-sm text-white/80 font-medium group-hover:text-sky-400 transition-colors">{r.file_name}</p>
-                      <p className="text-xs text-white/40">{t(r.report_type)} • {r.file_size_kb}KB</p>
+                      <p className="text-xs text-white/40">
+                        {t(r.report_type)} • {r.file_size_kb}KB
+                        {r.uploaded_at && ` • ${new Date(r.uploaded_at).toLocaleDateString()}`}
+                      </p>
                     </div>
                   </div>
-                  <Download size={16} className="text-white/30 group-hover:text-sky-400 transition-colors" />
-                </a>
+                  <div className="flex items-center gap-2">
+                    <a href={r.file_url} download={r.file_name} className="p-2 text-white/30 hover:text-sky-400 hover:bg-white/5 rounded-lg transition-colors" title="Download">
+                      <Download size={16} />
+                    </a>
+                    <button onClick={() => handleDeleteReport(r.id)} className="p-2 text-white/30 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors" title="Delete">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           )}

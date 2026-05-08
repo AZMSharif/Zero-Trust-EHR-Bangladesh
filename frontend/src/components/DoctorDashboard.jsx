@@ -189,7 +189,10 @@ export default function DoctorDashboard() {
                     <div className="w-9 h-9 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400"><FileText size={16} /></div>
                     <div>
                       <p className="text-sm text-white/80 font-medium group-hover:text-sky-400 transition-colors">{r.file_name}</p>
-                      <p className="text-xs text-white/40">{t(r.report_type)} • {r.file_size_kb}KB</p>
+                      <p className="text-xs text-white/40">
+                        {t(r.report_type)} • {r.file_size_kb}KB
+                        {r.uploaded_at && ` • ${new Date(r.uploaded_at).toLocaleDateString()}`}
+                      </p>
                     </div>
                   </div>
                   <Download size={16} className="text-white/30 group-hover:text-sky-400 transition-colors" />
