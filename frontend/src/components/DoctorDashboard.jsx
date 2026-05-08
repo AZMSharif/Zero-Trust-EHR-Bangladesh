@@ -7,7 +7,8 @@ import {
   Shield, Activity, Syringe, FileText, Brain, Globe, User,
   AlertTriangle, Heart, Cigarette, Wine, Leaf, Cannabis,
   Download, Clock, Sparkles, CheckCircle2, Loader2, Upload,
-  FlaskConical, Pill, LogOut, ShieldAlert, ArrowLeft
+  FlaskConical, Pill, LogOut, ShieldAlert, ArrowLeft,
+  Stethoscope, CalendarDays
 } from "lucide-react";
 import ReportUploadModal from "./ReportUploadModal";
 
@@ -168,6 +169,73 @@ export default function DoctorDashboard() {
 
       {/* Clinical History */}
       <GlassCard className="mb-6" delay={0.45}><SectionHeader icon={FlaskConical} title={t("clinicalHistory")} accent="amber" /><div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"><div><p className="text-xs text-white/40 mb-2 font-medium uppercase tracking-wider">{t("chronicDiseases")}</p><TagList items={snap.chronic_diseases} emptyText={t("noRecords")} color="amber" /></div><div><p className="text-xs text-white/40 mb-2 font-medium uppercase tracking-wider">{t("geneticDiseases")}</p><TagList items={snap.genetic_diseases} emptyText={t("noRecords")} color="violet" /></div><div><p className="text-xs text-white/40 mb-2 font-medium uppercase tracking-wider">{t("majorSurgeries")}</p><TagList items={snap.major_surgeries} emptyText={t("noRecords")} color="teal" /></div><div><p className="text-xs text-white/40 mb-2 font-medium uppercase tracking-wider">{t("drugHistory")}</p><TagList items={snap.drug_history} emptyText={t("noRecords")} color="sky" /></div><div><p className="text-xs text-white/40 mb-2 font-medium uppercase tracking-wider">{t("allergies")}</p><TagList items={snap.allergies} emptyText={t("noRecords")} color="rose" /></div></div></GlassCard>
+
+      {/* Treatment History (Prescriptions) */}
+      <GlassCard className="mb-6" delay={0.48}>
+        <SectionHeader icon={Stethoscope} title={t("treatmentHistory")} accent="violet" />
+        {(patient.prescriptions || []).length === 0 ? (
+          <p className="text-white/30 text-sm italic">{t("noPrescriptions")}</p>
+        ) : (
+          <div className="space-y-4">
+            {patient.prescriptions.map((rx) => {
+              const meds = Array.isArray(rx.medications_json) ? rx.medications_json : [];
+              return (
+                <div key={rx.id} className="p-4 rounded-xl bg-white/[0.03] border border-white/5 hover:border-violet-500/20 transition-all">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-400">
+                        <Stethoscope size={15} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-white/90">{rx.doctor?.full_name || rx.doctor_bmdc}</p>
+                        {rx.doctor?.specialty && <p className="text-xs text-white/40">{rx.doctor.specialty}</p>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-white/40">
+                      <CalendarDays size={12} />
+                      <span>{new Date(rx.date_issued).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-US", { year: "numeric", month: "short", day: "numeric" })}</span>
+                    </div>
+                  </div>
+
+                  {rx.diagnosis && (
+                    <div className="mb-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-white/30">{t("diagnosis")}</span>
+                      <p className="text-sm text-amber-300/90 mt-0.5">{rx.diagnosis}</p>
+                    </div>
+                  )}
+
+                  {meds.length > 0 && (
+                    <div className="mb-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-white/30">{t("medications")}</span>
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {meds.map((med, i) => (
+                          <span key={i} className="px-2 py-0.5 rounded-md bg-sky-500/10 text-sky-300 text-xs ring-1 ring-sky-500/20">
+                            {typeof med === "string" ? med : `${med.name || ""} ${med.dosage || ""} ${med.frequency || ""}`.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {rx.clinical_notes && (
+                    <div className="mb-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-white/30">{t("clinicalNotes")}</span>
+                      <p className="text-xs text-white/50 mt-0.5">{rx.clinical_notes}</p>
+                    </div>
+                  )}
+
+                  {rx.follow_up_date && (
+                    <div className="flex items-center gap-1.5 text-xs text-emerald-400/80 mt-1">
+                      <CalendarDays size={11} />
+                      <span>{t("followUp")}: {new Date(rx.follow_up_date).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-US", { year: "numeric", month: "short", day: "numeric" })}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </GlassCard>
 
       {/* Immunizations + Reports */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
