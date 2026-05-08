@@ -15,7 +15,7 @@ const puppeteer = require('puppeteer');
   });
 
   try {
-    await page.goto('https://frontend-eta-three-38.vercel.app/doctor/login', { waitUntil: 'networkidle0' });
+    await page.goto('https://medibridge-ehr.vercel.app/doctor/login', { waitUntil: 'networkidle0' });
     console.log("Navigated to login page.");
     
     await page.type('input[type="text"]', 'A-56789');

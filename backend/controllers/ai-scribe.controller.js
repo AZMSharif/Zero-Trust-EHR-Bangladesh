@@ -158,11 +158,18 @@ async function analyzeClinicalNote(req, res) {
       updated_snapshot: updated,
     });
   } catch (err) {
-    console.error("AI Scribe error:", err);
-    if (err.message && err.message.includes("429")) {
-        return res.status(429).json({ error: "AI Scribe quota exceeded. Please try again later or upgrade the API key." });
+    console.error("AI Scribe error:", err.message || err);
+    const msg = err.message || "";
+    if (msg.includes("429") || msg.includes("quota") || msg.includes("RESOURCE_EXHAUSTED")) {
+      return res.status(429).json({ error: "AI service quota exceeded. The free-tier limit has been reached. Please try again later or contact the administrator to upgrade the API key." });
     }
-    res.status(500).json({ error: "AI Scribe analysis failed" });
+    if (msg.includes("API_KEY_INVALID") || msg.includes("API key not valid")) {
+      return res.status(503).json({ error: "AI service is temporarily unavailable. The API key needs to be renewed by the administrator." });
+    }
+    if (msg.includes("400") || msg.includes("INVALID_ARGUMENT")) {
+      return res.status(400).json({ error: "AI could not process the clinical note. Please try rephrasing." });
+    }
+    res.status(500).json({ error: "AI Scribe analysis failed. Please try again shortly." });
   }
 }
 

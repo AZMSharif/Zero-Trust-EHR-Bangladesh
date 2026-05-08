@@ -126,10 +126,16 @@ const dictionary = {
   uploadFailed:       { en: "Failed to upload report.",   bn: "রিপোর্ট আপলোড ব্যর্থ হয়েছে।" },
   noReports:          { en: "No reports uploaded",        bn: "কোনো রিপোর্ট আপলোড হয়নি" },
 
-  // ── Prescriptions ──
+  // ── Prescriptions / Treatment History ──
   prescriptions:      { en: "Prescriptions",              bn: "প্রেসক্রিপশন" },
   prescribedBy:       { en: "Prescribed by",              bn: "লিখেছেন" },
   dateIssued:         { en: "Date Issued",                bn: "তারিখ" },
+  treatmentHistory:   { en: "Treatment History",          bn: "চিকিৎসার ইতিহাস" },
+  diagnosis:          { en: "Diagnosis",                  bn: "রোগনির্ণয়" },
+  medications:        { en: "Medications",                bn: "ওষুধপত্র" },
+  followUp:           { en: "Follow-up",                  bn: "ফলো-আপ" },
+  noPrescriptions:    { en: "No treatment records yet",   bn: "কোনো চিকিৎসার রেকর্ড নেই" },
+  clinicalNotes:      { en: "Notes",                      bn: "নোট" },
 
   // ── AI Scribe ──
   aiScribe:           { en: "AI Clinical Scribe",         bn: "এআই ক্লিনিক্যাল স্ক্রাইব" },
