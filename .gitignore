@@ -1,9 +1,29 @@
 node_modules/
 dist/
+
+# ── Environment files (NEVER commit secrets) ──
 .env
+.env.*
+*.env
+*.env.*
+!.env.example
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
+
 *.env.local
 .DS_Store
 *.log
 uploads/
 .vercel
 .render
+
+# ── Test/debug scripts with potential secrets ──
+backend/test_gemini.cjs
+backend/.env.test.txt
+backend/.env.vercel
+backend/.env.vercel.prod
+frontend/test_bundle.cjs
+backend/add_envs.ps1
+Login Credentials.pdf

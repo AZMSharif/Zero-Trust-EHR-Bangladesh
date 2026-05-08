@@ -70,8 +70,8 @@ async function analyzeClinicalNote(req, res) {
     }
 
     // 2. Call Gemini to parse the clinical note
-    // Switched to gemini-2.0-flash-lite due to quota limits on flash
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+    // Using gemini-2.5-flash — best balance of quality and free-tier availability
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `${SYSTEM_PROMPT}\n\nDOCTOR'S CLINICAL NOTE:\n"${text}"`;
 
