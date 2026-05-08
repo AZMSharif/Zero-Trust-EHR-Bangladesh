@@ -88,6 +88,25 @@ async function main() {
     skipDuplicates: true,
   });
 
+  // Prescriptions for Patient 1
+  const p1RxExists = await prisma.prescription.findFirst({ where: { patient_urn: p1.patient_urn } });
+  if (!p1RxExists) {
+    await prisma.prescription.create({
+      data: {
+        patient_urn: p1.patient_urn,
+        doctor_bmdc: "A-12345",
+        medications_json: [
+          { name: "Cetirizine", dose: "10mg", frequency: "OD", duration: "14 days", notes: "At bedtime" },
+          { name: "Mometasone Cream", dose: "0.1%", frequency: "BD", duration: "7 days", notes: "Apply on affected areas" },
+        ],
+        diagnosis: "Atopic Dermatitis (Eczema) — Acute Flare",
+        clinical_notes: "Patient presented with itchy, erythematous patches on forearms and neck. History of dry skin since childhood. Advised to use emollients regularly and avoid harsh soaps.",
+        follow_up_date: new Date(new Date().setDate(new Date().getDate() + 14)),
+        date_issued: new Date("2024-11-20"),
+      },
+    });
+  }
+
   console.log("✅ Patient 1:", p1.full_name, "| URN:", p1.patient_urn);
 
   // ── PATIENT 2: Mizanul Haque ──
@@ -135,6 +154,24 @@ async function main() {
     ],
     skipDuplicates: true,
   });
+
+  // Prescriptions for Patient 2
+  const p2RxExists = await prisma.prescription.findFirst({ where: { patient_urn: p2.patient_urn } });
+  if (!p2RxExists) {
+    await prisma.prescription.create({
+      data: {
+        patient_urn: p2.patient_urn,
+        doctor_bmdc: "A-56789",
+        medications_json: [
+          { name: "Amoxicillin", dose: "500mg", frequency: "TID", duration: "5 days", notes: "After meals" },
+          { name: "Dextromethorphan Syrup", dose: "10ml", frequency: "TID", duration: "5 days", notes: "If cough persists" },
+        ],
+        diagnosis: "Acute Upper Respiratory Tract Infection",
+        clinical_notes: "Patient complains of sore throat, dry cough, and mild fever for 2 days. No chest findings on auscultation. Advised warm fluids and rest.",
+        date_issued: new Date("2025-02-10"),
+      },
+    });
+  }
 
   console.log("✅ Patient 2:", p2.full_name, "| URN:", p2.patient_urn);
 
